@@ -1,0 +1,16 @@
+# Ambiente Python
+.venv/
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Django
+db.sqlite3
+.env
+staticfiles/
+
+# WhatsApp / dados locais
+runtime/
+node_modules/
+*.log
+*.pid
