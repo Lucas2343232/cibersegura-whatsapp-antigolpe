@@ -1,0 +1,35 @@
+{% extends "antigolpe/base.html" %}
+{% block title %}Meu painel | Proteção WhatsApp{% endblock %}
+{% block content %}
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4"><div><span class="eyebrow">ÁREA DO CLIENTE</span><h1 class="h2 mt-2 mb-1">Olá, {{ profile.full_name|default:user.first_name }}.</h1><p class="text-secondary mb-0">Pareie o WhatsApp que será protegido e acompanhe o monitoramento.</p></div><span id="status-pill" class="badge rounded-pill text-bg-warning px-3 py-2">Aguardando conexão</span></div>
+<form class="d-none">{% csrf_token %}</form>
+<div class="row g-4"><div class="col-lg-5"><div class="card border-0 shadow-sm h-100"><div class="card-body p-4"><div class="d-flex justify-content-between"><div><h2 class="h5">Parear WhatsApp</h2><p class="small text-secondary">Abra o WhatsApp no celular protegido e leia este QR Code.</p></div><i class="bi bi-qr-code-scan fs-2 text-primary"></i></div><div class="qr-wrap my-4"><img id="client-qr" class="img-fluid" alt="QR Code do WhatsApp protegido" {% if connection.qr_code_base64 %}src="data:image/png;base64,{{ connection.qr_code_base64 }}"{% endif %}><div id="qr-placeholder" class="text-center text-secondary small">Clique em gerar para iniciar sua sessão.</div></div><button id="generate-qr" class="btn btn-primary w-100" type="button"><i class="bi bi-arrow-repeat me-2"></i>Gerar novo QR Code</button><div id="client-error" class="alert alert-danger mt-3 d-none small"></div></div></div></div><div class="col-lg-7"><div class="card border-0 shadow-sm h-100"><div class="card-body p-4"><div class="d-flex justify-content-between align-items-center"><div><h2 class="h5 mb-1">Central de segurança</h2><p class="small text-secondary mb-0">Atividade exclusiva da sua proteção.</p></div><i class="bi bi-shield-check fs-2 text-success"></i></div><div id="empty-state" class="empty-state text-center py-5"><i class="bi bi-check-circle display-5 text-success"></i><h3 class="h6 mt-3">Nenhuma ameaça detectada hoje</h3><p class="small text-secondary">O sistema continuará acompanhando novas mensagens.</p></div><div id="activity-log" class="activity-list"></div></div></div></div></div>
+<script>
+// O navegador consulta dois endpoints Django a cada 2 segundos. O backend retorna
+// apenas a sessão do usuário autenticado, portanto um cliente nunca vê logs de outro.
+async function refreshClientDashboard(){
+  try {
+    const [statusResponse, activityResponse] = await Promise.all([
+      fetch('{% url "client_status" %}', {headers:{'X-Requested-With':'XMLHttpRequest'}}),
+      fetch('{% url "client_activity_logs" %}', {headers:{'X-Requested-With':'XMLHttpRequest'}})
+    ]);
+    const status = await statusResponse.json(); const activity = await activityResponse.json();
+    const pill = document.getElementById('status-pill');
+    pill.textContent = status.status_label || status.status;
+    pill.className = 'badge rounded-pill px-3 py-2 ' + (status.connected ? 'text-bg-success' : status.last_error ? 'text-bg-danger' : 'text-bg-warning');
+    const qr = document.getElementById('client-qr'); const placeholder = document.getElementById('qr-placeholder');
+    if(status.qr_code_base64){ qr.src='data:image/png;base64,'+status.qr_code_base64; qr.classList.remove('d-none'); placeholder.classList.add('d-none'); }
+    else if(status.connected){ qr.removeAttribute('src'); qr.classList.add('d-none'); placeholder.textContent='WhatsApp conectado e monitorando.'; placeholder.classList.remove('d-none'); }
+    renderActivity(activity.logs || []);
+  } catch(error){ const box=document.getElementById('client-error'); box.textContent='Não foi possível atualizar o status agora.'; box.classList.remove('d-none'); }
+}
+function renderActivity(logs){
+  const target=document.getElementById('activity-log'); if(!logs.length) return;
+  document.getElementById('empty-state').classList.add('d-none');
+  target.innerHTML=logs.map(log=>`<div class="activity-item"><span class="activity-dot dot-${log.level.toLowerCase()}"></span><div><strong>${escapeHtml(log.message)}</strong><div class="small text-secondary">${new Date(log.created_at).toLocaleString('pt-BR')}</div></div></div>`).join('');
+}
+function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+document.getElementById('generate-qr').addEventListener('click', async()=>{const button=document.getElementById('generate-qr');button.disabled=true;try{const csrf=document.querySelector('[name=csrfmiddlewaretoken]')?.value;const response=await fetch('{% url "client_generate_qr" %}',{method:'POST',headers:{'X-CSRFToken':csrf}});if(!response.ok) throw new Error();}finally{setTimeout(()=>button.disabled=false,1500);}});
+setInterval(refreshClientDashboard,2000); refreshClientDashboard();
+</script>
+{% endblock %}

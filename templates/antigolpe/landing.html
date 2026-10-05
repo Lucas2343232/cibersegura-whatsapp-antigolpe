@@ -1,0 +1,68 @@
+{% extends "antigolpe/base.html" %}
+{% block title %}Proteção WhatsApp | Cibersegurança Inclusiva{% endblock %}
+{% block content %}
+<style>
+  .scam-radar{background:#fff;border:1px solid #dce7ed;border-radius:16px;box-shadow:0 8px 28px #12304a12}
+  .scam-radar-mark{width:44px;height:44px;display:grid;place-items:center;border-radius:12px;background:#fff3d6;color:#b77900;font-size:1.35rem;flex:none}
+  .scam-news{min-height:72px}
+  .scam-news-item{animation:news-in .45s ease both}
+  .project-credit{border-top:1px solid #dce7ed;color:#64748b;font-size:.85rem}
+  @keyframes news-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  @media (prefers-reduced-motion:reduce){.scam-news-item{animation:none}}
+</style>
+<section class="hero py-5 py-lg-6">
+  <div class="row align-items-center g-5">
+    <div class="col-lg-7">
+      <span class="eyebrow">CIBERSEGURANÇA INCLUSIVA</span>
+      <h1 class="display-3 fw-bold mt-3">Proteção que entende o golpe antes que ele vire prejuízo.</h1>
+      <p class="lead text-secondary mt-4">Um assistente simples para monitorar sinais de engenharia social no WhatsApp e avisar você com clareza.</p>
+      <a class="btn btn-primary btn-lg mt-3" href="{% url 'checkout' %}">Comprar Proteção <i class="bi bi-arrow-right ms-2"></i></a>
+      <div class="d-flex gap-4 mt-4 text-secondary small"><span><i class="bi bi-shield-check text-primary me-1"></i>Monitoramento inclusivo</span><span><i class="bi bi-clock text-primary me-1"></i>Ativação rápida</span></div>
+    </div>
+    <div class="col-lg-5"><div class="hero-panel p-4 p-lg-5"><i class="bi bi-shield-lock display-1 text-primary"></i><h2 class="h3 mt-4">Seu WhatsApp, sob cuidado.</h2><p class="text-secondary mb-0">A sessão protegida monitora mensagens e o Guardião envia alertas quando o risco é confirmado.</p></div></div>
+  </div>
+</section>
+<section class="py-4" aria-labelledby="scam-radar-title">
+  <div class="scam-radar p-3 p-md-4">
+    <div class="d-flex flex-column flex-md-row align-items-md-center gap-3">
+      <div class="d-flex align-items-center gap-3">
+        <div class="scam-radar-mark"><i class="bi bi-broadcast-pin"></i></div>
+        <div>
+          <span class="eyebrow">BOLETIM DE PREVENÇÃO</span>
+          <h2 id="scam-radar-title" class="h5 mt-1 mb-0">Radar de golpes no WhatsApp</h2>
+        </div>
+      </div>
+      <div class="vr d-none d-md-block"></div>
+      <div id="scam-news" class="scam-news flex-grow-1 d-flex align-items-center" aria-live="polite">
+        <article class="scam-news-item">
+          <strong>Falsos pedidos de urgência</strong>
+          <p class="small text-secondary mb-0">Desconfie de mensagens que pressionam por PIX, códigos ou transferências imediatas.</p>
+        </article>
+      </div>
+      <span class="badge rounded-pill text-bg-light border text-secondary">Alerta educativo</span>
+    </div>
+  </div>
+</section>
+<section class="py-5 border-top"><div class="row g-4"><div class="col-md-4"><i class="bi bi-chat-dots fs-2 text-primary"></i><h3 class="h5 mt-3">Detecta sinais</h3><p class="text-secondary">Identifica urgência, pedidos de PIX, códigos e falsificação de identidade.</p></div><div class="col-md-4"><i class="bi bi-activity fs-2 text-primary"></i><h3 class="h5 mt-3">Mostra tudo</h3><p class="text-secondary">Acompanhe conexão, análises e alertas no seu painel.</p></div><div class="col-md-4"><i class="bi bi-person-heart fs-2 text-primary"></i><h3 class="h5 mt-3">Feito para pessoas</h3><p class="text-secondary">Linguagem direta e feedback visual em cada etapa.</p></div></div></section>
+<footer class="project-credit py-4 mt-2">
+  <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+    <span>Projeto desenvolvido para Trabalho de Conclusão de Curso (TCC).</span>
+    <span>Aluno: <strong>Lucas Oliveira Dias</strong></span>
+  </div>
+</footer>
+<script>
+  const scamNews = [
+    {title:'Falsos pedidos de urgência', text:'Desconfie de mensagens que pressionam por PIX, códigos ou transferências imediatas.'},
+    {title:'Convites e QR Codes suspeitos', text:'Antes de escanear, confirme quem enviou o código e qual serviço ele realmente abre.'},
+    {title:'Suporte técnico falso', text:'Empresas não devem pedir senhas ou códigos de verificação por uma conversa inesperada.'},
+    {title:'Contas clonadas', text:'Se alguém conhecido pedir dinheiro, confirme a identidade por uma ligação ou outro canal.'}
+  ];
+  let scamNewsIndex = 0;
+  const scamNewsTarget = document.getElementById('scam-news');
+  setInterval(() => {
+    scamNewsIndex = (scamNewsIndex + 1) % scamNews.length;
+    const item = scamNews[scamNewsIndex];
+    scamNewsTarget.innerHTML = `<article class="scam-news-item"><strong>${item.title}</strong><p class="small text-secondary mb-0">${item.text}</p></article>`;
+  }, 5000);
+</script>
+{% endblock %}
